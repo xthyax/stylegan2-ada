@@ -33,16 +33,20 @@ verbose = True # Print status messages to stdout.
 # Internal helper funcs.
 
 def _find_compiler_bindir():
-    hostx64_paths = sorted(glob.glob('C:/Program Files (x86)/Microsoft Visual Studio/*/Professional/VC/Tools/MSVC/*/bin/Hostx64/x64'), reverse=True)
+    # hostx64_paths = sorted(glob.glob('C:/Program Files (x86)/Microsoft Visual Studio/*/Professional/VC/Tools/MSVC/*/bin/Hostx64/x64'), reverse=True)
+    # if hostx64_paths != []:
+    #     return hostx64_paths[0]
+    # hostx64_paths = sorted(glob.glob('C:/Program Files (x86)/Microsoft Visual Studio/*/BuildTools/VC/Tools/MSVC/*/bin/Hostx64/x64'), reverse=True)
+    # if hostx64_paths != []:
+    #     return hostx64_paths[0]
+    # hostx64_paths = sorted(glob.glob('C:/Program Files (x86)/Microsoft Visual Studio/*/Community/VC/Tools/MSVC/*/bin/Hostx64/x64'), reverse=True)
+    # if hostx64_paths != []:
+    #     return hostx64_paths[0]
+    hostx64_paths = sorted(glob.glob(r"D:\KLA\Jhyn\VisualStudio2015\Team Tools\Performance Tools\x64"), reverse=True)
     if hostx64_paths != []:
         return hostx64_paths[0]
-    hostx64_paths = sorted(glob.glob('C:/Program Files (x86)/Microsoft Visual Studio/*/BuildTools/VC/Tools/MSVC/*/bin/Hostx64/x64'), reverse=True)
-    if hostx64_paths != []:
-        return hostx64_paths[0]
-    hostx64_paths = sorted(glob.glob('C:/Program Files (x86)/Microsoft Visual Studio/*/Community/VC/Tools/MSVC/*/bin/Hostx64/x64'), reverse=True)
-    if hostx64_paths != []:
-        return hostx64_paths[0]
-    vc_bin_dir = 'C:/Program Files (x86)/Microsoft Visual Studio 14.0/vc/bin'
+    # vc_bin_dir = 'C:/Program Files (x86)/Microsoft Visual Studio 14.0/vc/bin'
+    vc_bin_dir = r"D:\KLA\Jhyn\VisualStudio2015\VC\bin"
     if os.path.isdir(vc_bin_dir):
         return vc_bin_dir
     return None

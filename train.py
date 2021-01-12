@@ -27,6 +27,45 @@ class UserError(Exception):
     pass
 
 #----------------------------------------------------------------------------
+def set_GPU(num_of_GPUs):
+    try:
+        from gpuinfo import GPUInfo
+        import numpy as np
+        current_memory_gpu = GPUInfo.gpu_usage()[1]
+        list_available_gpu = np.where(np.array(current_memory_gpu) < 1500)[0].astype('str').tolist()
+        current_available_gpu = ",".join(list_available_gpu)
+        # print(list_available_gpu)
+        # print(current_available_gpu)
+        # print(num_of_GPUs)
+    except:
+        print("[INFO] No GPU found")
+        current_available_gpu = "-1"
+        list_available_gpu = []
+        
+    if len(list_available_gpu) < num_of_GPUs and len(list_available_gpu) > 0:
+        print("==============Warning==============")
+        print("Your process had been terminated")
+        print("Please decrease number of gpus you using")
+        print(f"number of Devices available:\t{len(list_available_gpu)} gpu(s)")
+        print(f"number of Device will use:\t{num_of_GPUs} gpu(s)")
+        sys.exit()
+
+    elif len(list_available_gpu) > num_of_GPUs and num_of_GPUs != 0:
+        redundant_gpu = len(list_available_gpu) - num_of_GPUs
+        list_available_gpu = list_available_gpu[redundant_gpu:]
+        # list_available_gpu = list_available_gpu[:num_of_GPUs]
+        current_available_gpu = ",".join(list_available_gpu)
+
+    elif num_of_GPUs == 0 or len(list_available_gpu)==0:
+        current_available_gpu = "-1"
+        if len(list_available_gpu)==0:
+            print("[INFO] No GPU found")
+
+    print("[INFO] ***********************************************")
+    print(f"[INFO] You are using GPU(s): {current_available_gpu}")
+    print("[INFO] ***********************************************")
+    os.environ["CUDA_VISIBLE_DEVICES"] = current_available_gpu
+
 
 def setup_training_options(
     # General options (not included in desc).
@@ -162,7 +201,7 @@ def setup_training_options(
     cfg_specs = {
         'auto':          dict(ref_gpus=-1, kimg=25000,  mb=-1, mbstd=-1, fmaps=-1,  lrate=-1,     gamma=-1,   ema=-1,  ramp=0.05, map=2), # populated dynamically based on 'gpus' and 'res'
         'stylegan2':     dict(ref_gpus=8,  kimg=25000,  mb=32, mbstd=4,  fmaps=1,   lrate=0.002,  gamma=10,   ema=10,  ramp=None, map=8), # uses mixed-precision, unlike original StyleGAN2
-        'paper256':      dict(ref_gpus=8,  kimg=25000,  mb=64, mbstd=8,  fmaps=0.5, lrate=0.0025, gamma=1,    ema=20,  ramp=None, map=8),
+        'paper256':      dict(ref_gpus=8,  kimg=75000,  mb=64, mbstd=8,  fmaps=0.5, lrate=0.0025, gamma=1,    ema=20,  ramp=None, map=8),
         'paper512':      dict(ref_gpus=8,  kimg=25000,  mb=64, mbstd=8,  fmaps=1,   lrate=0.0025, gamma=0.5,  ema=20,  ramp=None, map=8),
         'paper1024':     dict(ref_gpus=8,  kimg=25000,  mb=32, mbstd=4,  fmaps=1,   lrate=0.002,  gamma=2,    ema=10,  ramp=None, map=8),
         'cifar':         dict(ref_gpus=2,  kimg=100000, mb=64, mbstd=32, fmaps=0.5, lrate=0.0025, gamma=0.01, ema=500, ramp=0.05, map=2),
@@ -550,6 +589,7 @@ def main():
 
     args = parser.parse_args()
     try:
+        set_GPU(vars(args)["gpus"])
         run_training(**vars(args))
     except UserError as err:
         print(f'Error: {err}')
