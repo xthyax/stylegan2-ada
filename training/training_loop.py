@@ -19,6 +19,7 @@ import dnnlib.tflib as tflib
 from dnnlib.tflib.autosummary import autosummary
 
 from training import dataset
+import gc
 
 #----------------------------------------------------------------------------
 # Select size and contents of the image snapshot grids that are exported
@@ -225,6 +226,8 @@ def training_loop(
     tick_start_nimg = cur_nimg
     running_mb_counter = 0
 
+    gc.collect()
+    
     done = False
     while not done:
 
@@ -273,7 +276,8 @@ def training_loop(
             aug.tune(minibatch_size * minibatch_repeats)
 
         # Perform maintenance tasks once per tick.
-        done = (cur_nimg >= total_kimg * 1000) or (abort_fn is not None and abort_fn())
+        done = cur_tick > 10000
+        # done = (cur_nimg >= total_kimg * 1000) or (abort_fn is not None and abort_fn())
         if done or cur_tick < 0 or cur_nimg >= tick_start_nimg + kimg_per_tick * 1000:
             cur_tick += 1
             tick_kimg = (cur_nimg - tick_start_nimg) / 1000.0

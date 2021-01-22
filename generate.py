@@ -18,6 +18,7 @@ import PIL.Image
 
 import dnnlib
 import dnnlib.tflib as tflib
+from train import set_GPU
 
 #----------------------------------------------------------------------------
 
@@ -113,6 +114,7 @@ def main():
     parser.add_argument('--outdir', help='Where to save the output images', required=True, metavar='DIR')
 
     args = parser.parse_args()
+    set_GPU(1)
     generate_images(**vars(args))
 
 #----------------------------------------------------------------------------

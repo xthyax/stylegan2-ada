@@ -23,6 +23,7 @@ import scipy
 import scipy.ndimage
 import scipy.misc
 import datetime
+import json
 from tqdm import tqdm
 
 from training import dataset
@@ -652,7 +653,7 @@ def create_celeba(tfrecord_dir, celeba_dir, cx=89, cy=121):
 
 def create_from_images(tfrecord_dir, image_dir, shuffle):
     print('Loading images from "%s"' % image_dir)
-    image_filenames = sorted(glob.glob(os.path.join(image_dir, '*')))
+    image_filenames = sorted(glob.glob(os.path.join(image_dir, '*.bmp')))
     if len(image_filenames) == 0:
         error('No input images found')
 
@@ -668,6 +669,22 @@ def create_from_images(tfrecord_dir, image_dir, shuffle):
 
     with TFRecordExporter(tfrecord_dir, len(image_filenames)) as tfr:
         order = tfr.choose_shuffled_order() if shuffle else np.arange(len(image_filenames))
+        # From here, convert all label to onehot
+        # Pre-define class name
+        classes = ["Reject", "Pass"]
+        labels = []
+        for idx in range(order.size):
+            with open(image_filenames[order[idx]] +".json", "r", encoding='utf-8') as json_file:
+                obj = json.load(json_file)
+            class_name = obj["classId"][0]
+            labels.append(classes.index(class_name))
+
+        labels = np.array(labels)
+        onehot = np.zeros((labels.size, np.max(labels) + 1), dtype=np.float32)
+        onehot[np.arange(labels.size), labels] = 1.0
+        # print(labels)
+        # print(onehot)
+        # print(order)
         for idx in range(order.size):
             img = np.asarray(PIL.Image.open(image_filenames[order[idx]]))
             if channels == 1:
@@ -675,6 +692,7 @@ def create_from_images(tfrecord_dir, image_dir, shuffle):
             else:
                 img = img.transpose([2, 0, 1]) # HWC => CHW
             tfr.add_image(img)
+        tfr.add_labels(onehot[order])
 
 #----------------------------------------------------------------------------
 

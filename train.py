@@ -20,6 +20,7 @@ import dnnlib.tflib as tflib
 from training import training_loop
 from training import dataset
 from metrics import metric_defaults
+import sys
 
 #----------------------------------------------------------------------------
 
